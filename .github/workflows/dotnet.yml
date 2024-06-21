@@ -23,6 +23,4 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
-    - name: Echo
-      run: echo docker ps
+      run: dotnet test --verbosity high
