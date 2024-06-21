@@ -18,7 +18,7 @@ public class CitiesDbTesting
 
         var containerPostgres = new ContainerBuilder()
                 .WithImage(image)
-                .WithName("citiesdb")
+                // .WithName("citiesdb")
                 .WithEnvironment("POSTGRES_PASSWORD", "postgres")
                 .WithPortBinding(5437, 5432)
                 // .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
