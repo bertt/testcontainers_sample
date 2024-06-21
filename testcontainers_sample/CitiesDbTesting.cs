@@ -20,12 +20,13 @@ public class CitiesDbTesting
                 .WithImage(image)
                 .WithName("citiesdb")
                 .WithEnvironment("POSTGRES_PASSWORD", "postgres")
+                .WithEnvironment("TESTCONTAINERS_HOST_OVERRIDE", "172.17.0.5")
                 .WithPortBinding(5437, 5432)
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
                 .Build();
 
         await containerPostgres.StartAsync().ConfigureAwait(false);
-        ip = containerPostgres.Hostname;
+        ip = containerPostgres.IpAddress;
 
     }
 
@@ -33,7 +34,7 @@ public class CitiesDbTesting
     public void TestCities()
     {
         Debug.WriteLine("testing started with ip " + ip);
-        var connectionString = $"Host=127.0.0.1;Username=postgres;Password=postgres;Port=5437";
+        var connectionString = $"Host={ip};Username=postgres;Password=postgres;Port=5437";
         var connection = new Npgsql.NpgsqlConnection(connectionString);
         connection.Open();
 
