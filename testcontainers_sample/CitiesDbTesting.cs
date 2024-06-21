@@ -20,14 +20,14 @@ public class CitiesDbTesting
                 .WithImage(image)
                 .WithName("citiesdb")
                 .WithEnvironment("POSTGRES_PASSWORD", "postgres")
-                .WithEnvironment("TESTCONTAINERS_HOST_OVERRIDE", "172.17.0.5")
                 .WithPortBinding(5437, 5432)
-                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
+                // .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
                 .Build();
 
         await containerPostgres.StartAsync().ConfigureAwait(false);
         ip = containerPostgres.IpAddress;
-
+        // wait 5 seconds for the container to start
+        await Task.Delay(5000);
     }
 
     [Test]
