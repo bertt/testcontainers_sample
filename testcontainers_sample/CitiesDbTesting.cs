@@ -12,8 +12,6 @@ public class CitiesDbTesting
     [OneTimeSetUp]
     public async Task Setup()
     {
-        var dockerEndpoint = Environment.GetEnvironmentVariable("DOCKER_HOST") ?? UnixSocketAddr;
-
         var image = new ImageFromDockerfileBuilder()
      .WithDockerfile("Dockerfile")
      .Build();
@@ -21,7 +19,6 @@ public class CitiesDbTesting
         await image.CreateAsync().ConfigureAwait(false);
 
         containerPostgres = new ContainerBuilder()
-                .WithDockerEndpoint(dockerEndpoint)
                 .WithImage(image)
                 .WithEnvironment("POSTGRES_PASSWORD", "postgres")
                 .WithPortBinding(5437, 5432)
@@ -30,7 +27,7 @@ public class CitiesDbTesting
 
         await containerPostgres.StartAsync().ConfigureAwait(false);
         // wait 5 seconds for the container to start
-        await Task.Delay(5000);
+        await Task.Delay(10000);
     }
 
     [OneTimeTearDown]
