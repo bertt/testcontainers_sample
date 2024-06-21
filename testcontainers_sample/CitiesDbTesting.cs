@@ -5,7 +5,7 @@ using System.Diagnostics;
 namespace ConsoleAppTestContainers;
 public class CitiesDbTesting
 {
-    private string? ip;
+    private string? hostname;
 
     [SetUp]
     public async Task Setup()
@@ -25,7 +25,7 @@ public class CitiesDbTesting
                 .Build();
 
         await containerPostgres.StartAsync().ConfigureAwait(false);
-        ip = containerPostgres.IpAddress;
+        hostname = containerPostgres.Hostname;
         // wait 5 seconds for the container to start
         await Task.Delay(5000);
     }
@@ -33,8 +33,8 @@ public class CitiesDbTesting
     [Test]
     public void TestCities()
     {
-        Debug.WriteLine("testing started with ip " + ip);
-        var connectionString = $"Host={ip};Username=postgres;Password=postgres;Port=5437";
+        Debug.WriteLine("testing started with ip " + hostname);
+        var connectionString = $"Host={hostname};Username=postgres;Password=postgres;Port=5437";
         var connection = new Npgsql.NpgsqlConnection(connectionString);
         connection.Open();
 
