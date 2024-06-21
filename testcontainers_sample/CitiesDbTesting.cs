@@ -14,6 +14,7 @@ public class CitiesDbTesting
      .WithDockerfile("Dockerfile")
      .Build();
 
+        var network = new NetworkBuilder().Build();
         await image.CreateAsync().ConfigureAwait(false);
 
         var containerPostgres = new ContainerBuilder()
@@ -21,6 +22,7 @@ public class CitiesDbTesting
                 // .WithName("citiesdb")
                 .WithEnvironment("POSTGRES_PASSWORD", "postgres")
                 .WithPortBinding(5437, 5432)
+                .WithNetwork(network)
                 // .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
                 .Build();
 
