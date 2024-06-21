@@ -1,42 +1,50 @@
 ﻿using NUnit.Framework;
 using DotNet.Testcontainers.Builders;
 using System.Diagnostics;
+using DotNet.Testcontainers.Containers;
 
 namespace ConsoleAppTestContainers;
 public class CitiesDbTesting
 {
-    private string? hostname;
+    private const string UnixSocketAddr = "unix:/var/run/docker.sock";
+    private IContainer containerPostgres;
 
-    [SetUp]
+    [OneTimeSetUp]
     public async Task Setup()
     {
+        var dockerEndpoint = Environment.GetEnvironmentVariable("DOCKER_HOST") ?? UnixSocketAddr;
+
         var image = new ImageFromDockerfileBuilder()
      .WithDockerfile("Dockerfile")
      .Build();
 
-        var network = new NetworkBuilder().Build();
         await image.CreateAsync().ConfigureAwait(false);
 
-        var containerPostgres = new ContainerBuilder()
+        containerPostgres = new ContainerBuilder()
+                .WithDockerEndpoint(dockerEndpoint)
                 .WithImage(image)
-                // .WithName("citiesdb")
                 .WithEnvironment("POSTGRES_PASSWORD", "postgres")
                 .WithPortBinding(5437, 5432)
-                .WithNetwork(network)
                 // .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
                 .Build();
 
         await containerPostgres.StartAsync().ConfigureAwait(false);
-        hostname = containerPostgres.Hostname;
         // wait 5 seconds for the container to start
         await Task.Delay(5000);
+    }
+
+    [OneTimeTearDown]
+    public async Task TeardownOnce()
+    {
+        await containerPostgres.StopAsync();
+        await containerPostgres.DisposeAsync(); //important for the event to cleanup to be fired!
     }
 
     [Test]
     public void TestCities()
     {
-        Debug.WriteLine("testing started with ip " + hostname);
-        var connectionString = $"Host=localhost;Username=postgres;Password=postgres;Port=5437";
+        Debug.WriteLine("testing started with ip " + containerPostgres.Hostname);
+        var connectionString = $"Host={containerPostgres.Hostname};Username=postgres;Password=postgres;Port=5437";
         var connection = new Npgsql.NpgsqlConnection(connectionString);
         connection.Open();
 
