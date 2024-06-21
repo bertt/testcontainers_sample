@@ -1,10 +1,12 @@
 ﻿using NUnit.Framework;
 using DotNet.Testcontainers.Builders;
+using System.Diagnostics;
 
 namespace ConsoleAppTestContainers;
 public class CitiesDbTesting
 {
-    private string hostname;
+    private string? ip;
+
     [SetUp]
     public async Task Setup()
     {
@@ -23,15 +25,14 @@ public class CitiesDbTesting
                 .Build();
 
         await containerPostgres.StartAsync().ConfigureAwait(false);
-
-        hostname = containerPostgres.Hostname;
-        TestContext.Out.WriteLine("This is the Hostname:" + hostname);
+        ip = containerPostgres.Hostname;
     }
 
     [Test]
     public void TestCities()
     {
-        var connectionString = $"Host={hostname};Username=postgres;Password=postgres;Port=5437";
+        Debug.WriteLine("testing started with ip " + ip);
+        var connectionString = $"Host={ip};Username=postgres;Password=postgres;Port=5437";
         var connection = new Npgsql.NpgsqlConnection(connectionString);
         connection.Open();
 
@@ -53,6 +54,5 @@ public class CitiesDbTesting
         connection.Close();
 
         Assert.That(cities.Count.Equals(5));
-
     }
 }
