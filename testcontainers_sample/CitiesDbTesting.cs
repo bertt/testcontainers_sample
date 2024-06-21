@@ -4,7 +4,7 @@ using DotNet.Testcontainers.Builders;
 namespace ConsoleAppTestContainers;
 public class CitiesDbTesting
 {
-
+    private string hostname;
     [SetUp]
     public async Task Setup()
     {
@@ -16,18 +16,23 @@ public class CitiesDbTesting
 
         var containerPostgres = new ContainerBuilder()
                 .WithImage(image)
+                .WithName("citiesdb")
                 .WithEnvironment("POSTGRES_PASSWORD", "postgres")
                 .WithPortBinding(5437, 5432)
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
                 .Build();
 
         await containerPostgres.StartAsync().ConfigureAwait(false);
+
+        hostname = containerPostgres.Hostname;
+        Console.WriteLine("Hostname:" + hostname);
+
     }
 
     [Test]
     public void TestCities()
     {
-        var connectionString = $"Host=localhost;Username=postgres;Password=postgres;Port=5437";
+        var connectionString = $"Host={hostname};Username=postgres;Password=postgres;Port=5437";
         var connection = new Npgsql.NpgsqlConnection(connectionString);
         connection.Open();
 
