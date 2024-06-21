@@ -34,7 +34,7 @@ public class CitiesDbTesting
     public void TestCities()
     {
         Debug.WriteLine("testing started with ip " + hostname);
-        var connectionString = $"Host={hostname};Username=postgres;Password=postgres;Port=5437";
+        var connectionString = $"Host=172.17.0.1;Username=postgres;Password=postgres;Port=5437";
         var connection = new Npgsql.NpgsqlConnection(connectionString);
         connection.Open();
 
