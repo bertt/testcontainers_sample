@@ -26,6 +26,11 @@ public class CitiesDbTesting
 
         await containerPostgres.StartAsync().ConfigureAwait(false);
         ip = containerPostgres.Hostname;
+
+        // wait 10 seconds more
+        await Task.Delay(10000);
+
+
     }
 
     [Test]
