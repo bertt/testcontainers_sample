@@ -27,17 +27,13 @@ public class CitiesDbTesting
         await containerPostgres.StartAsync().ConfigureAwait(false);
         ip = containerPostgres.Hostname;
 
-        // wait 10 seconds more
-        await Task.Delay(10000);
-
-
     }
 
     [Test]
     public void TestCities()
     {
         Debug.WriteLine("testing started with ip " + ip);
-        var connectionString = $"Host={ip};Username=postgres;Password=postgres;Port=5437";
+        var connectionString = $"Host=127.0.0.1;Username=postgres;Password=postgres;Port=5437";
         var connection = new Npgsql.NpgsqlConnection(connectionString);
         connection.Open();
 
