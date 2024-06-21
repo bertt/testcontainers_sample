@@ -1,13 +1,14 @@
 ﻿using DotNet.Testcontainers.Builders;
 using NUnit.Framework;
 using Testcontainers.PostgreSql;
+using Npgsql;
 
 namespace ConsoleAppTestContainers;
 public class CitiesDbTesting
 {
     private PostgreSqlContainer _containerPostgres;
 
-    [OneTimeSetUp]
+    [SetUp]
     public async Task Setup()
     {
         _containerPostgres = new PostgreSqlBuilder()
@@ -16,11 +17,11 @@ public class CitiesDbTesting
         .Build();
         var initScript = File.ReadAllText("./postgres-db/create_cities.sql");
 
-        await _containerPostgres.StartAsync().ConfigureAwait(false);
-        await _containerPostgres.ExecScriptAsync(initScript).ConfigureAwait(false);
+        await _containerPostgres.StartAsync();
+        await _containerPostgres.ExecScriptAsync(initScript);
     }
 
-    [OneTimeTearDown]
+    [TearDown]
     public async Task TeardownOnce()
     {
         await _containerPostgres.StopAsync();
@@ -31,7 +32,7 @@ public class CitiesDbTesting
     public void TestCities()
     {
         var connectionString = _containerPostgres.GetConnectionString();
-        var connection = new Npgsql.NpgsqlConnection(connectionString);
+        var connection = new NpgsqlConnection(connectionString);
         connection.Open();
 
         var command = connection.CreateCommand();
