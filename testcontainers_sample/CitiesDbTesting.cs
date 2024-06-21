@@ -25,8 +25,7 @@ public class CitiesDbTesting
         await containerPostgres.StartAsync().ConfigureAwait(false);
 
         hostname = containerPostgres.Hostname;
-        Console.WriteLine("Hostname:" + hostname);
-
+        TestContext.Out.WriteLine("This is the Hostname:" + hostname);
     }
 
     [Test]
