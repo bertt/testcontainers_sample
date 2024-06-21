@@ -1,67 +1,43 @@
-﻿using NUnit.Framework;
-using DotNet.Testcontainers.Builders;
-using System.Diagnostics;
-using DotNet.Testcontainers.Containers;
+﻿using DotNet.Testcontainers.Builders;
+using NUnit.Framework;
+using Testcontainers.PostgreSql;
 
 namespace ConsoleAppTestContainers;
 public class CitiesDbTesting
 {
-    private const string UnixSocketAddr = "unix:/var/run/docker.sock";
-    private IContainer containerPostgres;
+    private PostgreSqlContainer containerPostgres;
 
     [OneTimeSetUp]
     public async Task Setup()
     {
-        var image = new ImageFromDockerfileBuilder()
-     .WithDockerfile("Dockerfile")
-     .Build();
-
-        await image.CreateAsync().ConfigureAwait(false);
-
-        containerPostgres = new ContainerBuilder()
-                .WithImage(image)
-                .WithEnvironment("POSTGRES_PASSWORD", "postgres")
-                .WithPortBinding(5437, 5432)
-                // .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
-                .Build();
+        containerPostgres = new PostgreSqlBuilder()
+        .WithImage("postgis/postgis:16-3.4-alpine")
+        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
+        .Build();
 
         await containerPostgres.StartAsync().ConfigureAwait(false);
-        // wait 5 seconds for the container to start
-        await Task.Delay(10000);
     }
 
     [OneTimeTearDown]
     public async Task TeardownOnce()
     {
         await containerPostgres.StopAsync();
-        await containerPostgres.DisposeAsync(); //important for the event to cleanup to be fired!
+        await containerPostgres.DisposeAsync(); 
     }
 
     [Test]
     public void TestCities()
     {
-        Debug.WriteLine("testing started with ip " + containerPostgres.Hostname);
-        var connectionString = $"Host={containerPostgres.Hostname};Username=postgres;Password=postgres;Port=5437";
+        var connectionString = containerPostgres.GetConnectionString();
         var connection = new Npgsql.NpgsqlConnection(connectionString);
         connection.Open();
 
         var command = connection.CreateCommand();
-        var sql = "select id, city_name, st_x(geom) as longitude, st_y(geom) as latitude from cities";
+        var sql = "SELECT PostGIS_Version()";
         command.CommandText = sql;
-        var reader = command.ExecuteReader();
-        var cities = new List<City>();  
-        while (reader.Read())
-        {
-            cities.Add(new City
-            {
-                Id = reader.GetInt32(0),
-                CityName = reader.GetString(1),
-                Longitude = reader.GetDouble(2),
-                Latitude = reader.GetDouble(3)
-            });
-        }
-        connection.Close();
+        var version = command.ExecuteScalar();
 
-        Assert.That(cities.Count.Equals(5));
+        Assert.That(version.Equals("3.4 USE_GEOS=1 USE_PROJ=1 USE_STATS=1"));
+        connection.Close();
     }
 }
